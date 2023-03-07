@@ -38,10 +38,9 @@ public class UserAccountController {
     }
 
     @GetMapping(path="/getPDSKey")
-    public ResponseEntity<?> getServerPublicKey() throws NoSuchAlgorithmException, InvalidKeySpecException, IOException {
-        byte[] x = userAccountService.getPdsPublicKey();
+    public ResponseEntity<?> sendPDSKey() throws NoSuchAlgorithmException, InvalidKeySpecException, IOException {
 
-        return ResponseEntity.ok(new MessageResponse(Base64.getEncoder().encodeToString(x)));
+        return ResponseEntity.ok(new MessageResponse(userAccountService.sendPDSKey()));
 
     }
 

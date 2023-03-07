@@ -45,7 +45,7 @@ public class UserAccountService {
     }
 
 
-    public byte[] getPdsPublicKey() throws NoSuchAlgorithmException, InvalidKeySpecException, IOException {
-        return diffieHellman.getServerPublicKey();
+    public String sendPDSKey() throws NoSuchAlgorithmException, InvalidKeySpecException, IOException {
+        return diffieHellman.sendPDSKey();
     }
 }
