@@ -1,25 +1,20 @@
 package com.sn.SNProject.services;
 
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.*;
 import javax.crypto.interfaces.DHKey;
 import javax.crypto.interfaces.DHPrivateKey;
 import javax.crypto.interfaces.DHPublicKey;
-import javax.crypto.spec.DHParameterSpec;
-import javax.crypto.spec.DHPrivateKeySpec;
-import javax.crypto.spec.DHPublicKeySpec;
-import javax.crypto.spec.SecretKeySpec;
+import javax.crypto.spec.*;
 import java.io.*;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.*;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.PKCS8EncodedKeySpec;
-import java.security.spec.X509EncodedKeySpec;
-import java.security.spec.RSAPublicKeySpec;
+import java.security.spec.*;
 import java.util.Arrays;
 import java.util.Base64;
 
@@ -37,8 +32,6 @@ public class DiffieHellman {
                         16);
         final BigInteger g = new BigInteger("2");
         return new DHParameterSpec(p, g);
-    }
-    public void test() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
     }
     public void createKeys() throws NoSuchAlgorithmException, IOException, InvalidAlgorithmParameterException {
 
@@ -62,20 +55,19 @@ public class DiffieHellman {
     }
     public String sendPDSKey() throws NoSuchAlgorithmException, InvalidKeySpecException, IOException {
 
-        BufferedReader reader = new BufferedReader(new FileReader("public.txt"));
+        BufferedReader reader = new BufferedReader(new FileReader("D:\\SN-Project\\SN-Project\\src\\main\\resources\\static\\public.txt"));
         String line = reader.readLine();
         reader.close();
         return line;
 
     }
-
-    public String generateSecretKey(String clientPublicKey) throws NoSuchAlgorithmException, InvalidKeySpecException, IOException, InvalidKeyException {
+    public byte[] generateSecretKey(String clientPublicKey) throws NoSuchAlgorithmException, InvalidKeySpecException, IOException, InvalidKeyException {
 
         DHParameterSpec modp15 = modp15();
 
-        byte[] clientPublicKeyBytes = hexStringToByteArray(clientPublicKey);
+        //byte[] clientPublicKeyBytes = hexStringToByteArray(clientPublicKey);
 
-        BigInteger clientPublicKeyInt = new BigInteger(clientPublicKeyBytes);
+        BigInteger clientPublicKeyInt = new BigInteger(clientPublicKey, 16);
 
         KeyFactory keyFactory = KeyFactory.getInstance("DH");
         DHPublicKeySpec clientPublicKeySpecs = new DHPublicKeySpec(
@@ -104,8 +96,37 @@ public class DiffieHellman {
 
         keyAgreement.doPhase(clientPKey, true);
         byte[] sharedSecretKey = keyAgreement.generateSecret();
+
         System.out.println(toHexString(sharedSecretKey));
 
-        return toHexString(sharedSecretKey);
+        return sharedSecretKey;
+    }
+
+    public String decrypt(byte[] sharedSecretKey, String encryptedData, String iv, String tag) throws NoSuchAlgorithmException,
+            InvalidKeySpecException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, UnsupportedEncodingException, NoSuchProviderException, InvalidParameterSpecException {
+
+        byte[] newArray = new byte[32];
+        System.arraycopy(sharedSecretKey, 0, newArray, 0, 32);
+
+        byte[] encryptedBytes = Base64.getDecoder().decode(encryptedData);
+
+        /*byte[] ivBytes = new byte[16];
+        System.arraycopy(encryptedBytes, 0, ivBytes, 0, 16);
+        System.out.println(Base64.getEncoder().encodeToString(ivBytes));
+        byte[] encrypted = new byte[encryptedBytes.length - 12 - 16];
+        System.arraycopy(encryptedBytes, 12, encrypted, 0, encryptedBytes.length - 12 - 16);
+        System.out.println(Base64.getEncoder().encodeToString(encrypted));
+        byte[] tagBytes = new byte[16];
+        System.arraycopy(encryptedBytes, encryptedBytes.length - 16, tagBytes, 0, 16);
+        System.out.println(Base64.getEncoder().encodeToString(tagBytes)); */
+        SecretKeySpec keySpec = new SecretKeySpec(newArray, "AES");
+        IvParameterSpec ivParameterSpec = new IvParameterSpec(Base64.getDecoder().decode(iv));
+
+        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+        cipher.init(Cipher.DECRYPT_MODE, keySpec, ivParameterSpec);
+
+        byte[] decryptedData = cipher.doFinal(encryptedBytes);
+
+        return new String(decryptedData);
     }
 }

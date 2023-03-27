@@ -1,12 +1,13 @@
 package com.sn.SNProject.payloads;
 
 
-public class SignupRequest {
+public class LoginRequest {
     private final String encryptedData;
     private final String userPublicKey;
     private final String iv;
     private final String tag;
-    public SignupRequest(String userPublicKey, String encryptedData, String iv, String tag) {
+
+    public LoginRequest(String encryptedData, String userPublicKey, String iv, String tag) {
         this.encryptedData = encryptedData;
         this.userPublicKey = userPublicKey;
         this.iv = iv;

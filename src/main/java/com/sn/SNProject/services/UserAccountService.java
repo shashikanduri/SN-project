@@ -18,7 +18,6 @@ import java.util.List;
 @Service
 public class UserAccountService {
     private UserDao userDao;
-
     private DiffieHellman diffieHellman;
     @Autowired
     public UserAccountService(@Qualifier("userdaoaccess") UserDao userDao, DiffieHellman diffieHellman) {
@@ -27,23 +26,9 @@ public class UserAccountService {
     }
     public String addUser(User user){
 
-        /*
-
-                    WE CAN DO THIS LATER
-        try {
-
-            String data = diffieHellman.decrypt(user.clientPublicKey, user.encryptedData);
-
-        }catch(InvalidKeyException | NoSuchPaddingException | NoSuchAlgorithmException | IllegalBlockSizeException |
-               BadPaddingException | InvalidKeySpecException | IOException e){
-            return "404";
-        }
-        */
-        //AFTER SETTING THE USER DATA ABOVE , SAVE IT TO MONGO WITH THE BELOW STEP
         userDao.addUser(user);
         return "200";
     }
-
 
     public String sendPDSKey() throws NoSuchAlgorithmException, InvalidKeySpecException, IOException {
         return diffieHellman.sendPDSKey();
