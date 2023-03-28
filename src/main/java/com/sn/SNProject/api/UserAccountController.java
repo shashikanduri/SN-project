@@ -5,6 +5,7 @@ import com.sn.SNProject.model.User;
 import com.sn.SNProject.payloads.LoginRequest;
 import com.sn.SNProject.payloads.MessageResponse;
 import com.sn.SNProject.payloads.SignupRequest;
+import com.sn.SNProject.payloads.UserInfoResponse;
 import com.sn.SNProject.repositories.UsersRepository;
 import com.sn.SNProject.services.DiffieHellman;
 import com.sn.SNProject.services.UserAccountService;
@@ -27,6 +28,8 @@ import java.security.spec.InvalidParameterSpecException;
 import java.util.Objects;
 import java.util.Optional;
 
+import static ch.qos.logback.core.encoder.ByteArrayUtil.toHexString;
+
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RequestMapping("api/users")
 @RestController
@@ -47,10 +50,12 @@ public class UserAccountController {
             IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, NoSuchProviderException, InvalidParameterSpecException {
 
         byte[] secretKey = diffieHellman.generateSecretKey(request.getUserPublicKey());
-        String dataString = diffieHellman.decrypt(secretKey, request.getEncryptedData(), request.getIv(), request.getTag());
+        String dataString = diffieHellman.decrypt(secretKey, request.getEncryptedData(), request.getIv());
+
         System.out.println("requestdata :  " + dataString);
         String[] userdata = dataString.split("//");
-        User user = new User(userdata[0], userdata[1], userdata[2]);
+
+        User user = new User(userdata[0], userdata[1], userdata[2], request.getUserPublicKey());
         if(userRepository.existsById(userdata[0])) {
             System.out.println("email exists");
             return ResponseEntity.badRequest().body(new MessageResponse("email already exists !"));
@@ -77,7 +82,7 @@ public class UserAccountController {
             IllegalBlockSizeException, BadPaddingException, InvalidParameterSpecException, NoSuchProviderException {
 
         byte[] secretKey = diffieHellman.generateSecretKey(request.getUserPublicKey());
-        String dataString = diffieHellman.decrypt(secretKey, request.getEncryptedData(), request.getIv(), request.getTag());
+        String dataString = diffieHellman.decrypt(secretKey, request.getEncryptedData(), request.getIv());
         System.out.println("requestdata :  " + dataString);
         String[] userdata = dataString.split("//");
 
@@ -92,8 +97,15 @@ public class UserAccountController {
             return ResponseEntity.status(202).body(new MessageResponse("no such user"));
         }
 
-        return ResponseEntity.ok().body(new MessageResponse(userOptional.get().getFullName()));
+        byte[] newArray = new byte[32];
+        System.arraycopy(secretKey, 0, newArray, 0, 32);
 
+        User login = userOptional.get();
+        String sessionId = toHexString(secretKey);
+        login.setSessionId(sessionId);
+        userRepository.save(login);
+
+        return ResponseEntity.ok().body(new UserInfoResponse(login.getFullName(), login.getEmail(), sessionId));
     }
 
 }

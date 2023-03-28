@@ -10,12 +10,14 @@ public class User {
     private String password;
     private String userPublicKey;
     private String fullName;
+    private String sessionId;
 
-    public User(String email, String password, String fullName) {
+    public User(String email, String password, String fullName, String userPublicKey) {
         this.email = email;
         this.password = password;
         this.fullName = fullName;
         this.userPublicKey = userPublicKey;
+        this.sessionId = sessionId;
     }
 
     public String getEmail() {
@@ -28,5 +30,13 @@ public class User {
 
     public String getFullName() {
         return fullName;
+    }
+
+    public String getSessionId() {
+        return sessionId;
+    }
+
+    public void setSessionId(String sessionId) {
+        this.sessionId = sessionId;
     }
 }

@@ -102,7 +102,7 @@ public class DiffieHellman {
         return sharedSecretKey;
     }
 
-    public String decrypt(byte[] sharedSecretKey, String encryptedData, String iv, String tag) throws NoSuchAlgorithmException,
+    public String decrypt(byte[] sharedSecretKey, String encryptedData, String iv) throws NoSuchAlgorithmException,
             InvalidKeySpecException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, UnsupportedEncodingException, NoSuchProviderException, InvalidParameterSpecException {
 
         byte[] newArray = new byte[32];
@@ -110,15 +110,6 @@ public class DiffieHellman {
 
         byte[] encryptedBytes = Base64.getDecoder().decode(encryptedData);
 
-        /*byte[] ivBytes = new byte[16];
-        System.arraycopy(encryptedBytes, 0, ivBytes, 0, 16);
-        System.out.println(Base64.getEncoder().encodeToString(ivBytes));
-        byte[] encrypted = new byte[encryptedBytes.length - 12 - 16];
-        System.arraycopy(encryptedBytes, 12, encrypted, 0, encryptedBytes.length - 12 - 16);
-        System.out.println(Base64.getEncoder().encodeToString(encrypted));
-        byte[] tagBytes = new byte[16];
-        System.arraycopy(encryptedBytes, encryptedBytes.length - 16, tagBytes, 0, 16);
-        System.out.println(Base64.getEncoder().encodeToString(tagBytes)); */
         SecretKeySpec keySpec = new SecretKeySpec(newArray, "AES");
         IvParameterSpec ivParameterSpec = new IvParameterSpec(Base64.getDecoder().decode(iv));
 
