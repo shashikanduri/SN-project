@@ -5,12 +5,12 @@ public class SignupRequest {
     private final String encryptedData;
     private final String userPublicKey;
     private final String iv;
-    private final String tag;
-    public SignupRequest(String userPublicKey, String encryptedData, String iv, String tag) {
+    private final String rsaPublicKey;
+    public SignupRequest(String userPublicKey, String encryptedData, String iv, String rsaPublicKey) {
         this.encryptedData = encryptedData;
         this.userPublicKey = userPublicKey;
         this.iv = iv;
-        this.tag = tag;
+        this.rsaPublicKey = rsaPublicKey;
     }
 
     public String getUserPublicKey() {
@@ -19,9 +19,8 @@ public class SignupRequest {
     public String getEncryptedData(){
         return encryptedData;
     }
-
     public String getIv() {
         return iv;
     }
-    public String getTag(){ return tag; }
+    public String getRsaPublicKey() {return rsaPublicKey;}
 }

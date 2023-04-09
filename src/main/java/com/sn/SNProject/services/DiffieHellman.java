@@ -1,5 +1,6 @@
 package com.sn.SNProject.services;
 
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +15,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.*;
+import java.security.interfaces.RSAPublicKey;
 import java.security.spec.*;
 import java.util.Arrays;
 import java.util.Base64;
@@ -32,6 +34,20 @@ public class DiffieHellman {
                         16);
         final BigInteger g = new BigInteger("2");
         return new DHParameterSpec(p, g);
+    }
+
+    public boolean verify(String message, String signatureBase64, String publicKeyBase64) throws NoSuchAlgorithmException, InvalidKeySpecException,
+            InvalidKeyException, SignatureException, IOException {
+
+        byte[] publicKeyBytes = Base64.getDecoder().decode(publicKeyBase64);
+        X509EncodedKeySpec spec = new X509EncodedKeySpec(publicKeyBytes);
+        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+        PublicKey publicKey = keyFactory.generatePublic(spec);
+        Signature sig = Signature.getInstance("SHA256withRSA");
+        sig.initVerify(publicKey);
+        sig.update(message.getBytes());
+        byte[] signatureBytes = Base64.getDecoder().decode(signatureBase64);
+        return sig.verify(signatureBytes);
     }
     public void createKeys() throws NoSuchAlgorithmException, IOException, InvalidAlgorithmParameterException {
 

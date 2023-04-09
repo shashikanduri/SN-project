@@ -10,14 +10,15 @@ public class User {
     private String password;
     private String userPublicKey;
     private String fullName;
+    private String rsaPublicKey;
     private String sessionId;
 
-    public User(String email, String password, String fullName, String userPublicKey) {
+    public User(String email, String password, String fullName, String userPublicKey, String rsaPublicKey) {
         this.email = email;
         this.password = password;
         this.fullName = fullName;
         this.userPublicKey = userPublicKey;
-        this.sessionId = sessionId;
+        this.rsaPublicKey = rsaPublicKey;
     }
 
     public String getEmail() {
@@ -39,4 +40,7 @@ public class User {
     public void setSessionId(String sessionId) {
         this.sessionId = sessionId;
     }
+
+    public String getRsaPublicKey() { return rsaPublicKey; }
+
 }

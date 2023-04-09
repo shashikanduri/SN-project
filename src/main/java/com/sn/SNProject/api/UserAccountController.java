@@ -55,7 +55,7 @@ public class UserAccountController {
         System.out.println("requestdata :  " + dataString);
         String[] userdata = dataString.split("//");
 
-        User user = new User(userdata[0], userdata[1], userdata[2], request.getUserPublicKey());
+        User user = new User(userdata[0], userdata[1], userdata[2], request.getUserPublicKey(), request.getRsaPublicKey());
         if(userRepository.existsById(userdata[0])) {
             System.out.println("email exists");
             return ResponseEntity.badRequest().body(new MessageResponse("email already exists !"));
@@ -63,7 +63,7 @@ public class UserAccountController {
 
         try{
             userRepository.save(user);
-            return ResponseEntity.ok(new MessageResponse("ok"));
+            return ResponseEntity.ok().body(null);
 
         }catch (Exception e){
             e.printStackTrace();
