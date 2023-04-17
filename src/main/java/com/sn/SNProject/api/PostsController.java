@@ -5,6 +5,7 @@ import com.sn.SNProject.model.User;
 import com.sn.SNProject.payloads.LoginRequest;
 import com.sn.SNProject.payloads.MessageResponse;
 import com.sn.SNProject.payloads.PostRequest;
+import com.sn.SNProject.payloads.PostResponse;
 import com.sn.SNProject.repositories.PostsRepository;
 import com.sn.SNProject.repositories.UsersRepository;
 import com.sn.SNProject.services.DiffieHellman;
@@ -54,7 +55,7 @@ public class PostsController {
             return ResponseEntity.status(201).body(new MessageResponse("security breach, data tampered!"));
         }
 
-        Post post = new Post(request.getImgSignature(), imageData, request.getUserId(), request.getCaption());
+        Post post = new Post(request.getImgSignature(), request.getEncryptedImage(), request.getUserId(), request.getCaption(), request.getIv());
 
         try{
             postsRepository.save(post);
@@ -66,10 +67,10 @@ public class PostsController {
         return ResponseEntity.ok().body(null);
     }
 
-    @GetMapping(path="/getpost/{ds}/{email}")
-    public ResponseEntity<?> getPost(@PathVariable(value = "ds") String digitalSignature, @Valid @RequestBody LoginRequest request
-                                    ,@PathVariable(value = "email") String email){
+    @GetMapping(path="/getpost")
+    public ResponseEntity<?> getPost(@RequestParam String digitalSignature, @RequestParam String email) throws InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, UnsupportedEncodingException, NoSuchAlgorithmException, InvalidKeySpecException, BadPaddingException, InvalidParameterSpecException, InvalidKeyException, NoSuchProviderException {
 
+        digitalSignature = "OQfnOxBUzhVZAhPX+F87VTeeLLerOGRas4/yjzZocmsnxPuGB4dzXVB+VWFHvOZkE4B/Q1ly+5NNJI/tBq+cFgqtZB2Zpd2NVjiBIKTOFNR5WDa5b+YQW7h040+8xbytkYsZ2qlyhVas0mocbfjkWqQ3WcN5ECx99H3mkqkF/BeacVN+UtjaiKhQN2T8y0McdodrmBcSUiqD9vevvQCsFvbb2dI7eUCmsUZiRAmtE8X8KNkx9MiCHPueXv4mf8EInEOMu5o97CticrwhY/zL9OXCbfJHShdw7I5n5nBxeLNQTXKp0snARgMzXXA1YI+PiNXgu4vLTMS8Rzs6p0ma6A==";
 
         Optional<Post> postOptional = postsRepository.findById(digitalSignature);
         if(!postOptional.isPresent()) {
@@ -84,9 +85,20 @@ public class PostsController {
             return ResponseEntity.status(201).body(new MessageResponse("no user"));
         }
         User user = userOptional.get();
-        byte[] secretKey = hexStringToByteArray(user.getSessionId());
+        System.out.println(user.getSessionId());
+        byte[] secretKey = hexStringToByteArray(user.getSessionId());             // posters secret key
 
-        return ResponseEntity.status(200).body("u");
+        String imageData = diffieHellman.decrypt(secretKey, post.getImageData(), post.getIv());
+        userOptional = userRepository.findById(email);
+        if(!userOptional.isPresent()) {
+            return ResponseEntity.status(201).body(new MessageResponse("no user"));
+        }
+        user = userOptional.get();
+        byte[] viewerSecretKey = hexStringToByteArray(user.getSessionId());       // viewers secret key
+        String encryptedImgAndIv = diffieHellman.encrypt(viewerSecretKey, imageData);
+
+        return ResponseEntity.ok().body(new PostResponse(encryptedImgAndIv.split("------")[0],
+                                                                encryptedImgAndIv.split("------")[1]));
 
     }
 }

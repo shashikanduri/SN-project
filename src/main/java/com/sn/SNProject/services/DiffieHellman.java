@@ -144,7 +144,7 @@ public class DiffieHellman {
         byte[] iv = new byte[16];
         SecureRandom random = new SecureRandom();
         random.nextBytes(iv);
-
+        System.out.println(iv.length);
         SecretKeySpec keySpec = new SecretKeySpec(newArray, "AES");
         IvParameterSpec ivParameterSpec = new IvParameterSpec(iv);
 
@@ -156,6 +156,6 @@ public class DiffieHellman {
         String encryptedImageBase64 = Base64.getEncoder().encodeToString(decryptedData);
         String ivBase64 = Base64.getEncoder().encodeToString(iv);
 
-        return encryptedImageBase64 + "//" + ivBase64;
+        return encryptedImageBase64 + "------" + ivBase64;
     }
 }

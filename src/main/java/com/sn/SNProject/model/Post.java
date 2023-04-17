@@ -11,12 +11,14 @@ public class Post {
     private String imageData;
     private String userId;
     private String caption;
+    private String iv;
 
-    public Post(String imgSignature, String imageData, String userId, String caption){
+    public Post(String imgSignature, String imageData, String userId, String caption, String iv){
         this.imgSignature = imgSignature;
         this.imageData = imageData;
         this.userId = userId;
         this.caption = caption;
+        this.iv = iv;
     }
 
     public String getImgSignature() {
@@ -34,4 +36,6 @@ public class Post {
     public String getCaption() {
         return caption;
     }
+
+    public String getIv() { return iv; }
 }
