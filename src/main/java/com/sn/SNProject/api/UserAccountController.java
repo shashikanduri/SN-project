@@ -1,6 +1,6 @@
 package com.sn.SNProject.api;
 
-import com.sn.SNProject.dao.UserDao;
+
 import com.sn.SNProject.model.User;
 import com.sn.SNProject.payloads.LoginRequest;
 import com.sn.SNProject.payloads.MessageResponse;
@@ -8,7 +8,6 @@ import com.sn.SNProject.payloads.SignupRequest;
 import com.sn.SNProject.payloads.UserInfoResponse;
 import com.sn.SNProject.repositories.UsersRepository;
 import com.sn.SNProject.services.DiffieHellman;
-import com.sn.SNProject.services.UserAccountService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -35,11 +34,8 @@ import static ch.qos.logback.core.encoder.ByteArrayUtil.toHexString;
 @RestController
 public class UserAccountController {
 
-    @Autowired
-    @Qualifier("userdaoaccess")
-    private UserDao userDao;
-    @Autowired
-    UserAccountService userAccountService;
+
+
     @Autowired
     private DiffieHellman diffieHellman;
     @Autowired
