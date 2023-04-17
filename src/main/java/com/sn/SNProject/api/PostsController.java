@@ -2,6 +2,7 @@ package com.sn.SNProject.api;
 
 import com.sn.SNProject.model.Post;
 import com.sn.SNProject.model.User;
+import com.sn.SNProject.payloads.LoginRequest;
 import com.sn.SNProject.payloads.MessageResponse;
 import com.sn.SNProject.payloads.PostRequest;
 import com.sn.SNProject.repositories.PostsRepository;
@@ -54,8 +55,38 @@ public class PostsController {
         }
 
         Post post = new Post(request.getImgSignature(), imageData, request.getUserId(), request.getCaption());
-        postsRepository.save(post);
+
+        try{
+            postsRepository.save(post);
+        }catch (Exception e){
+            return ResponseEntity.status(500).body(new MessageResponse("Internal Server Error"));
+        }
+
 
         return ResponseEntity.ok().body(null);
+    }
+
+    @GetMapping(path="/getpost/{ds}/{email}")
+    public ResponseEntity<?> getPost(@PathVariable(value = "ds") String digitalSignature, @Valid @RequestBody LoginRequest request
+                                    ,@PathVariable(value = "email") String email){
+
+
+        Optional<Post> postOptional = postsRepository.findById(digitalSignature);
+        if(!postOptional.isPresent()) {
+            return ResponseEntity.status(202).body(new MessageResponse("no post"));
+        }
+
+        Post post = postOptional.get();
+        String posterEmail = post.getUserId();
+
+        Optional<User> userOptional = userRepository.findById(posterEmail);
+        if(!userOptional.isPresent()) {
+            return ResponseEntity.status(201).body(new MessageResponse("no user"));
+        }
+        User user = userOptional.get();
+        byte[] secretKey = hexStringToByteArray(user.getSessionId());
+
+        return ResponseEntity.status(200).body("u");
+
     }
 }

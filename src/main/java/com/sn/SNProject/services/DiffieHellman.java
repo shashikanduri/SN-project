@@ -38,7 +38,7 @@ public class DiffieHellman {
 
     public boolean verify(String message, String signatureBase64, String publicKeyBase64) throws NoSuchAlgorithmException, InvalidKeySpecException,
             InvalidKeyException, SignatureException, IOException {
-
+        System.out.println(publicKeyBase64);
         byte[] publicKeyBytes = Base64.getDecoder().decode(publicKeyBase64);
         X509EncodedKeySpec spec = new X509EncodedKeySpec(publicKeyBytes);
         KeyFactory keyFactory = KeyFactory.getInstance("RSA");
@@ -118,13 +118,13 @@ public class DiffieHellman {
         return sharedSecretKey;
     }
 
-    public String decrypt(byte[] sharedSecretKey, String encryptedData, String iv) throws NoSuchAlgorithmException,
+    public String decrypt(byte[] sharedSecretKey, String encryptedDataBase64, String iv) throws NoSuchAlgorithmException,
             InvalidKeySpecException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, UnsupportedEncodingException, NoSuchProviderException, InvalidParameterSpecException {
 
         byte[] newArray = new byte[32];
         System.arraycopy(sharedSecretKey, 0, newArray, 0, 32);
 
-        byte[] encryptedBytes = Base64.getDecoder().decode(encryptedData);
+        byte[] encryptedBytes = Base64.getDecoder().decode(encryptedDataBase64);
 
         SecretKeySpec keySpec = new SecretKeySpec(newArray, "AES");
         IvParameterSpec ivParameterSpec = new IvParameterSpec(Base64.getDecoder().decode(iv));
@@ -135,5 +135,27 @@ public class DiffieHellman {
         byte[] decryptedData = cipher.doFinal(encryptedBytes);
 
         return new String(decryptedData);
+    }
+
+    public String encrypt(byte[] sharedSecretKey, String imageData) throws InvalidAlgorithmParameterException, InvalidKeyException, NoSuchPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException {
+        byte[] newArray = new byte[32];
+        System.arraycopy(sharedSecretKey, 0, newArray, 0, 32);
+
+        byte[] iv = new byte[16];
+        SecureRandom random = new SecureRandom();
+        random.nextBytes(iv);
+
+        SecretKeySpec keySpec = new SecretKeySpec(newArray, "AES");
+        IvParameterSpec ivParameterSpec = new IvParameterSpec(iv);
+
+        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+        cipher.init(Cipher.ENCRYPT_MODE, keySpec, ivParameterSpec);
+
+        byte[] decryptedData = cipher.doFinal(imageData.getBytes());
+
+        String encryptedImageBase64 = Base64.getEncoder().encodeToString(decryptedData);
+        String ivBase64 = Base64.getEncoder().encodeToString(iv);
+
+        return encryptedImageBase64 + "//" + ivBase64;
     }
 }

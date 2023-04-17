@@ -1,11 +1,12 @@
 package com.sn.SNProject.model;
 
+import jakarta.validation.constraints.NotBlank;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.annotation.Id;
 
 @Document
 public class Post {
-    @Id
+    @Id @NotBlank
     private String imgSignature;
     private String imageData;
     private String userId;

@@ -12,7 +12,8 @@ services:
       - MONGO_INITDB_ROOT_PASSWORD=shashi10
   mongo-express:
     image: mongo-express
-    container_name: mongo-express
+    container_name: mongo
+
     restart: always
     ports:
       - 8081:8081
