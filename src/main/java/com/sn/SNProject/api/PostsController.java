@@ -64,13 +64,11 @@ public class PostsController {
         }
 
 
-        return ResponseEntity.ok().body(null);
+        return ResponseEntity.status(200).body(new MessageResponse("saved!"));
     }
 
     @GetMapping(path="/getpost")
     public ResponseEntity<?> getPost(@RequestParam String digitalSignature, @RequestParam String email) throws InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, UnsupportedEncodingException, NoSuchAlgorithmException, InvalidKeySpecException, BadPaddingException, InvalidParameterSpecException, InvalidKeyException, NoSuchProviderException {
-
-        digitalSignature = "OQfnOxBUzhVZAhPX+F87VTeeLLerOGRas4/yjzZocmsnxPuGB4dzXVB+VWFHvOZkE4B/Q1ly+5NNJI/tBq+cFgqtZB2Zpd2NVjiBIKTOFNR5WDa5b+YQW7h040+8xbytkYsZ2qlyhVas0mocbfjkWqQ3WcN5ECx99H3mkqkF/BeacVN+UtjaiKhQN2T8y0McdodrmBcSUiqD9vevvQCsFvbb2dI7eUCmsUZiRAmtE8X8KNkx9MiCHPueXv4mf8EInEOMu5o97CticrwhY/zL9OXCbfJHShdw7I5n5nBxeLNQTXKp0snARgMzXXA1YI+PiNXgu4vLTMS8Rzs6p0ma6A==";
 
         Optional<Post> postOptional = postsRepository.findById(digitalSignature);
         if(!postOptional.isPresent()) {
@@ -89,12 +87,15 @@ public class PostsController {
         byte[] secretKey = hexStringToByteArray(user.getSessionId());             // posters secret key
 
         String imageData = diffieHellman.decrypt(secretKey, post.getImageData(), post.getIv());
-        userOptional = userRepository.findById(email);
-        if(!userOptional.isPresent()) {
+        System.out.println("viewr email  "+ email);
+        Optional<User> viewerOptional = userRepository.findById(email);
+        if(!viewerOptional.isPresent()) {
             return ResponseEntity.status(201).body(new MessageResponse("no user"));
         }
-        user = userOptional.get();
-        byte[] viewerSecretKey = hexStringToByteArray(user.getSessionId());       // viewers secret key
+        User viewer = viewerOptional.get();
+        System.out.println("this one" + viewer.getSessionId());
+        byte[] viewerSecretKey = hexStringToByteArray(viewer.getSessionId());       // viewers secret key
+
         String encryptedImgAndIv = diffieHellman.encrypt(viewerSecretKey, imageData);
 
         return ResponseEntity.ok().body(new PostResponse(encryptedImgAndIv.split("------")[0],
